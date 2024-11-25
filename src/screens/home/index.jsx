@@ -1,10 +1,13 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import FloatActionButton from '../../components/ui/floatActionButton';
 import { ADDTASK } from '../../utils/routes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TaskCart from '../../components/home/taskCart';
+import HeaderComponent from '../../components/home/headerComponent';
 
 const Home = ({ navigation }) => {
+  const [refreshing, setRefreshing] = useState(false);
   const [tasks, setTasks] = useState([]);
 
   const getTask = async () => {
@@ -20,6 +23,13 @@ const Home = ({ navigation }) => {
 
     }
   };
+
+  const onRefresh = ()=>{
+    setRefreshing(true);
+    getTask();
+    setRefreshing(false);
+  };
+
   useEffect(() => {
     getTask();
   }, []);
@@ -27,7 +37,11 @@ const Home = ({ navigation }) => {
     <View style={styles.container}>
       <FlatList
         data={tasks}
-        renderItem={({ item }) => <Text>{item.title}</Text>}
+        ListHeaderComponent={<HeaderComponent/>}
+        renderItem={({ item }) => <TaskCart item={item}/>}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
 
       />
 
