@@ -9,45 +9,80 @@ import HeaderComponent from '../../components/home/headerComponent';
 const Home = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [tasks, setTasks] = useState([]);
+  const [ongoing, setOngoing] = useState(0);
+  const [pending, setPending] = useState(0);
+  const [completed, setCompleted] = useState(0);
+  const [cancel, setCancel] = useState(0);
+
+
+
+
+
+
 
   const getTask = async () => {
-    let myTask = [];
     try {
-      const task = await AsyncStorage.getItem('task');
-      myTask.push(JSON.parse(task));
-      console.log('Task');
-      setTasks(myTask);
-
-    } catch (error) {
-      console.log(error);
-
-    }
-  };
-
-  const onRefresh = ()=>{
-    setRefreshing(true);
-    getTask();
-    setRefreshing(false);
-  };
-
-  useEffect(() => {
-    getTask();
-  }, []);
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={tasks}
-        ListHeaderComponent={<HeaderComponent/>}
-        renderItem={({ item }) => <TaskCart item={item}/>}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      const savedTask = await AsyncStorage.getItem('tasks');
+      setTasks(JSON.parse(savedTask));
+      let CompletedCount = 0;
+      let PendingCount = 0;
+      let OngoingCount = 0;
+      let CancelCount = 0;
+      for (const task of JSON.parse(savedTask)) {
+        if (task.status === 1 ) {
+          OngoingCount++;
         }
 
-      />
+        if (task.status === 2) {
+          PendingCount++;
+        }
+        if (task.status === 3) {
+          CompletedCount++;
+        }
 
-      <FloatActionButton onPress={() => navigation.navigate(ADDTASK)} />
-    </View>
-  );
+
+        if (task.status === 4) {
+          CancelCount++;
+        }
+        setOngoing(OngoingCount);
+        setPending(PendingCount);
+        setCompleted(CompletedCount);
+        setCancel(CancelCount);
+
+
+}
+    }
+      
+      catch (error) {
+    console.log(error);
+
+  }
+};
+
+const onRefresh = () => {
+  setRefreshing(true);
+  getTask();
+  setRefreshing(false);
+};
+
+useEffect(() => {
+  getTask();
+}, []);
+return (
+  <View style={styles.container}>
+    <FlatList
+      data={tasks}
+      ListHeaderComponent={<HeaderComponent ongoing={ongoing} pending={pending} completed={completed} cancel={cancel} />}
+      renderItem={({ item }) => <TaskCart item={item} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+
+    />
+
+    <FloatActionButton onPress={() => navigation.navigate(ADDTASK)} />
+  </View>
+);
 };
 
 export default Home;
